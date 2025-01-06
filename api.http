@@ -1,0 +1,79 @@
+# docker testing : docker run -d -p 8080:8080  ha20003660/azure-fusion:latest
+# @baseUrl = http://azure-fusion.eastus.cloudapp.azure.com
+
+@baseUrl = http://localhost:8080
+# @baseUrl = http://azure-fusion.eastus.cloudapp.azure.com
+
+
+### Hello API
+GET {{baseUrl}}/api/hello?name=Hari
+Content-Type: application/json
+
+
+
+### Hello API - Vaading Connect API
+POST {{baseUrl}}/connect/HelloEndpoint/sayHello
+Content-Type: application/json
+
+{
+  "name": "Hari"
+}
+
+
+### Get All Prompts
+GET {{baseUrl}}/api/prompts
+Content-Type: application/json
+
+### Get Prompt by ID
+GET {{baseUrl}}/api/prompts/1
+Content-Type: application/json
+
+### Create Prompt
+POST {{baseUrl}}/api/prompts
+Content-Type: application/json
+
+{
+  "promptNumber": "TEST102",
+  "prompt": "This is a test prompt."
+}
+
+### Update Prompt
+PUT {{baseUrl}}/api/prompts/1
+Content-Type: application/json
+
+{
+  "promptNumber": "TEST101",
+  "prompt": "This is a test prompt - updated."
+}
+### Delete Prompt
+DELETE {{baseUrl}}/api/prompts/1
+Content-Type: application/json
+
+# CURL Comamnds
+# Get All Prompts
+curl -X GET 192.168.0.22:31000/api/prompts \
+-H "Content-Type: application/json"
+
+# Get Prompt by ID
+curl -X GET 192.168.0.22:31000/api/prompts/1 \
+-H "Content-Type: application/json"
+
+# Create Prompt
+curl -X POST 192.168.0.22:31000/api/prompts \
+-H "Content-Type: application/json" \
+-d '{
+  "promptNumber": "TEST102",
+  "prompt": "This is a test prompt."
+}'
+
+# Update Prompt
+curl -X PUT 192.168.0.22:31000/api/prompts/1 \
+-H "Content-Type: application/json" \
+-d '{
+  "promptNumber": "TEST101",
+  "prompt": "This is a test prompt - updated."
+}'
+
+# Delete Prompt
+curl -X DELETE 192.168.0.22:31000/api/prompts/1 \
+-H "Content-Type: application/json"

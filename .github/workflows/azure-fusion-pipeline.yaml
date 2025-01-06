@@ -1,0 +1,155 @@
+#Workflow name
+name: azure-fusion-pipeline
+run-name: azure-fusion-pipeline
+on:
+  #Manually trigger workflow runs
+  workflow_dispatch:
+  #Trigger the workflow on push from the main branch
+#  push:
+#    branches:
+#      - feature-devops
+#   push:
+#     branches:
+#       - main
+#Trigger the workflow on pull request to the main branch
+# pull_request:
+#   branches:
+#     - main
+
+env:
+  # Set the registry URL as an environment variable
+  REGISTRY: azurecr
+  # Set the image name as an environment variable
+  IMAGE_NAME: azure-fusion
+  # Set the image tag as an environment variable
+  DEPLOYMENT_NAME: azure-fusion
+  SERVICE_NAME: azure-fusion
+  SERVICE_TYPE: NodePort
+  PORT: 80
+  TARGET_PORT: 8080
+  NODE_PORT: 31000
+  REPLICAS: 1
+  IMAGE_TAG: ${{ github.sha }}
+  # IMAGE_TAG: latest
+
+jobs:
+  #Build & Deploy job
+  buidImage:
+    # Name of the job
+    name: Build Docker Image & Deploy it to AKS
+    if: true
+    #Run on Ubuntu using the latest version
+    runs-on: ubuntu-latest
+    #Deploy steps
+    steps:
+      #Build steps
+      # Checkout the code
+      - name: Checkout
+        if: true
+        uses: actions/checkout@v4
+
+      # Print github sha
+      - name: Print github sha
+        if: true
+        run: echo ${{ github.sha }}
+
+      # Setup Java with Maven
+      - name: Setup Java
+        if: true
+        uses: actions/setup-Java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          architecture: x64
+          cache: maven
+
+      # Build with Maven to create JAR
+      - name: Build with Maven to create JAR
+        if: true
+        run: mvn -B -U clean package -Pproduction -DskipTests
+        # run: mvn -B -U clean package -Pproduction -DskipTests
+
+      # Login to Azure Container Registry
+      - name: Login to Azure Container Registry
+        if: true
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_NAME }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      # Build docker image
+      - name: Build docker image
+        if: true
+        run: |
+          docker build . -t ${{ secrets.REGISTRY_NAME }}/$IMAGE_NAME:$IMAGE_TAG -t ${{ secrets.REGISTRY_NAME }}/$IMAGE_NAME:latest -f Dockerfile
+
+      # Push docker image to Azure Container Registry
+      - name: Build push image
+        if: true
+        run: |
+          docker push ${{ secrets.REGISTRY_NAME }}/$IMAGE_NAME:$IMAGE_TAG
+          docker push ${{ secrets.REGISTRY_NAME }}/$IMAGE_NAME:latest
+
+      # Azure Login
+      - name: Azure login
+        if: true
+        id: login
+        uses: azure/login@v1.4.3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Deploy to Azure Web App
+      - name: Deploy to Azure Web App
+        if: true
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'azure-fusion-devpost'
+          images: '${{ secrets.REGISTRY }}.azurecr.io/${{ secrets.REPOSITORY }}:${{ github.sha }}'
+
+      # Set AKS context
+      - name: Set AKS context
+        if: true
+        id: set-context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: '${{ secrets.RESOURCE_GROUP }}'
+          cluster-name: '${{ secrets.CLUSTER_NAME }}'
+
+      # Setup kubectl
+      - name: Setup kubectl
+        if: true
+        id: install-kubectl
+        uses: azure/setup-kubectl@v3
+
+      # Deploy to AKS
+      - name: Deploy to AKS
+        if: true
+        id: deploy-aks
+        uses: Azure/k8s-deploy@v4
+        with:
+          namespace: 'default'
+          manifests: |
+            deployment.yaml
+          images: '${{ secrets.REGISTRY }}.azurecr.io/${{ secrets.REPOSITORY }}:${{ github.sha }}'
+          pull-images: false
+
+      # Login to Docker Hub
+      - name: Login to Docker Hub
+        if: true
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Build docker image
+      - name: Build docker image
+        if: true
+        run: |
+          docker build . -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest -f Dockerfile
+
+      # Push docker image
+      - name: Build push image
+        if: true
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest
