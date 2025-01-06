@@ -22,6 +22,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import static org.reflections.Reflections.log;
 
+/**
+ * Configuration class for setting up Semantic Kernel related beans and services.
+ */
 @Configuration
 public class SKConfigs {
     @Value("${client.azureopenai.key}")
@@ -35,6 +38,11 @@ public class SKConfigs {
     @Value("${client.azureopenai.embedding.dimension}")
     String embeddingDimension;
 
+    /**
+     * Creates an asynchronous OpenAI client.
+     *
+     * @return the OpenAIAsyncClient instance
+     */    
     private OpenAIAsyncClient openAIAsyncClient() {
         return new OpenAIClientBuilder()
                 .endpoint(endpoint)
@@ -43,6 +51,12 @@ public class SKConfigs {
 
     }
 
+    /**
+     * Creates a ChatCompletionService using the OpenAI client.
+     *
+     * @return the ChatCompletionService instance
+     */    
+
     private ChatCompletionService chatCompletionService() {
         return OpenAIChatCompletion.builder()
                 .withOpenAIAsyncClient(openAIAsyncClient())
@@ -50,6 +64,12 @@ public class SKConfigs {
                 .build();
     }
 
+    /**
+     * Creates a Kernel bean with the specified plugins.
+     *
+     * @param skPlugins the SKPlugins instance
+     * @return the Kernel instance
+     */    
     @Bean
     public Kernel kernel(SKPlugins skPlugins) {
         KernelPlugin kernelPlugin = KernelPluginFactory.createFromObject(
@@ -62,6 +82,12 @@ public class SKConfigs {
                 .build();
     }
 
+    /**
+     * Creates an in-memory vector store for storing document vectors.
+     *
+     * @return the VectorStoreRecordCollection instance
+     */    
+
     @Bean
     public OpenAITextEmbeddingGenerationService embeddingGenerationService() {
         return OpenAITextEmbeddingGenerationService.builder()
@@ -72,6 +98,12 @@ public class SKConfigs {
                 .build();
     }
 
+    /**
+     * Creates a ContextVariableTypeConverter for String type.
+     *
+     * @param objectMapper the ObjectMapper instance
+     * @return the ContextVariableTypeConverter instance for String
+     */    
     @Bean
     public VectorStoreRecordCollection<String, Document> inMemoryVectorStore() {
         VolatileVectorStore volatileVectorStore = new VolatileVectorStore();
@@ -84,6 +116,12 @@ public class SKConfigs {
                         .build());
     }
 
+    /**
+     * Creates a ContextVariableTypeConverter for LoanApplication type.
+     *
+     * @param objectMapper the ObjectMapper instance
+     * @return the ContextVariableTypeConverter instance for LoanApplication
+     */    
     @Bean
     public ContextVariableTypeConverter<String> stringContextVariableTypeConverter(ObjectMapper objectMapper) {
         return new ContextVariableTypeConverter<>(
