@@ -33,6 +33,16 @@ public class SKPlugins {
         this.loanApplicationEndpoint = loanApplicationEndpoint;
     }
 
+    /**
+     * Searches for information related to various loan-related topics such as
+     * applying for a loan,
+     * required documents, approval process, interest rates, loan approval, loan
+     * repayment, profile
+     * update, customer support, and contact information.
+     *
+     * @param query the query to answer
+     * @return a Mono that emits a list of strings containing the search results
+     */
     @DefineKernelFunction(name = "SearchFromQuestion", description = "find information related apply for a loan, documents required, approval process, interest rats, loan approval, loan repayment, profile update, customer support, contact", returnType = "string")
     public Mono<List<String>> searchInAnIndex(
             @KernelFunctionParameter(description = "the query to answer", name = "query") String query) {
@@ -40,6 +50,13 @@ public class SKPlugins {
         return contentRetriever.searchKnowledgeBase(query);
     }
 
+    /**
+     * Retrieves Loan Application details for the provided loan number.
+     *
+     * @param loanNumber the loan number to retrieve details for
+     * @return the LoanApplication details for the provided loan number, or null if
+     *         not found
+     */
     @DefineKernelFunction(name = "GetLoanApplicationDetailsByLoanNumber", description = "Retrieves Loan Application details for the provided loan number", returnType = "org.genai.fusion.model.LoanApplication")
     public LoanApplication getLoanApplicationByLoanNumber(
             @KernelFunctionParameter(description = "The loan number to retrieve details for", name = "loanNumber") String loanNumber) {
@@ -47,7 +64,13 @@ public class SKPlugins {
         return loanApplicationEndpoint.findByLoanNumber(loanNumber).orElse(null);
     }
 
-
+    /**
+     * Retrieves Loan Application details for the provided email address.
+     *
+     * @param email the email address to retrieve details for
+     * @return the LoanApplication details for the provided email address, or null
+     *         if not found
+     */
     @DefineKernelFunction(name = "GetLoanApplicationDetailsByEmail", description = "Retrieves Loan Application details for the provided email address", returnType = "org.genai.fusion.model.LoanApplication")
     public LoanApplication getLoanApplicationByEmail(
             @KernelFunctionParameter(description = "The email address to retrieve details for", name = "email") String email) {
@@ -55,6 +78,15 @@ public class SKPlugins {
         return loanApplicationEndpoint.findByEmail(email).orElse(null);
     }
 
+    /**
+     * Updates the address for a given loan application identified by the loan
+     * number.
+     *
+     * @param loanNumber the loan number to update the address for
+     * @param address    the new address to set
+     * @return the updated LoanApplication details, or null if the loan application
+     *         is not found
+     */
     @DefineKernelFunction(name = "UpdateLoanApplicationAddressByLoanNumber", description = "Update the address for a given application loan number", returnType = "org.genai.fusion.model.LoanApplication")
     public LoanApplication updateLoanApplicationAddressByLoanNumber(
             @KernelFunctionParameter(description = "The loan number to update the address for", name = "loanNumber") String loanNumber,
@@ -74,6 +106,17 @@ public class SKPlugins {
         }
     }
 
+    /**
+     * Creates a Loan Application for a customer.
+     *
+     * @param customerName the customer's name
+     * @param email        the customer's email
+     * @param loanNumber   the loan number
+     * @param loanType     the type of loan
+     * @param loanAmount   the loan amount
+     * @param address      the customer's address
+     * @return the created LoanApplication
+     */
     @DefineKernelFunction(name = "CreateLoanApplication", description = "Create a Loan Application for a customer", returnType = "org.genai.fusion.model.LoanApplication")
     public LoanApplication createLoanApplication(
             @KernelFunctionParameter(description = "The customer's name", name = "customerName") String customerName,
@@ -97,7 +140,6 @@ public class SKPlugins {
         return loanApplication;
     }
 
-
     /**
      * Get the current date and time for the system default timezone.
      *
@@ -109,7 +151,8 @@ public class SKPlugins {
 
     /**
      * Get the current date and time in the local time zone.
-     * <p>Example: {{time.now}} => Sunday, January 12, 2025 9:15 AM
+     * <p>
+     * Example: {{time.now}} => Sunday, January 12, 2025 9:15 AM
      *
      * @return The current date and time in the local time zone.
      */
